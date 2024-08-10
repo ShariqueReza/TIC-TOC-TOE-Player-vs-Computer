@@ -1,0 +1,747 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Project_6</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+
+    <!-- Bootstrap CSS v5.2.1 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+      crossorigin="anonymous"
+    />
+    <link href="index.css" rel="stylesheet">
+  </head>
+
+  <body style="background-color: blanchedalmond;">
+    <header>
+      <!-- place navbar here -->
+    </header>
+    <main>
+      <div id="game_container" class="text-center container">
+        <h1 class="fw-bolder text-center mt-4 mb-5">Tic Tac Toe</h1>
+        <div id="cell_container" class="row d-flex justify-content-center">
+            <div cellIndex="0" id="0" class="cell col-5"></div>
+            <div cellIndex="1" id="1" class="cell col-5"></div>
+            <div cellIndex="2"  id="2"class="cell col-5"></div>
+        </div>  
+        <div  id="cell_container" class="row d-flex justify-content-center">
+            <div cellIndex="3"  id="3"class="cell col-5"></div>
+            <div cellIndex="4" id="4" class="cell col-5"></div>
+            <div cellIndex="5"  id="5"class="cell col-5"></div>
+        </div> 
+        <div  id="cell_container" class="row d-flex justify-content-center">  
+            <div cellIndex="6" id="6" class="cell col-5"></div>
+            <div cellIndex="7" id="7"class="cell col-5"></div>
+            <div cellIndex="8" id="8" class="cell col-5"></div>
+        </div>
+        <h3 class="mt-4 mb-2">Choose difficulty</h3>
+        <div>
+          <button type="button" class="btn btn-success btn-sm" id="easyBtn">Easy</button>
+          <button type="button" class="btn btn-warning btn-sm" id="mediumBtn">Medium</button>
+          <button type="button" class="btn btn-danger btn-sm" id="hardBtn">Hard</button>
+        </div>
+      
+
+        <h2 id="statusText" class="mt-5"></h2>
+        <button type="button" class="btn btn-primary" id="autoButton" onclick="autoMove()">Computer</button>
+        <div class="text-center mt-5 fw-semibold">
+          <button id="restartBtn" class="btn btn-secondary">Restart</button>
+        </div>
+      </div>
+    </main>
+    <footer>
+      <!-- place footer here -->
+    </footer>
+    <!-- Bootstrap JavaScript Libraries -->
+    
+
+    
+    <script
+      src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+      integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+      crossorigin="anonymous"
+    ></script>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"
+      integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+"
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      const cells = document.querySelectorAll(".cell");
+      const statusText = document.querySelector("#statusText");
+      const restartBtn = document.querySelector("#restartBtn");
+      const winConditions = [
+          [0, 1, 2],
+          [3, 4, 5],
+          [6, 7, 8],
+          [0, 3, 6],
+          [1, 4, 7],
+          [2, 5, 8],
+          [0, 4, 8],
+          [2, 4, 6]
+      ];
+      const easyBtn=document.getElementById('easyBtn');
+      const mediumBtn=document.getElementById('mediumBtn');
+      const hardBtn=document.getElementById('hardBtn');
+      let mode;
+     
+      let options = ["", "", "", "", "", "", "", "", ""];
+      let currentPlayer = "X";
+      let running = false;
+      let coloring;
+
+      function game_mode(level){
+        mode=level;
+      }
+      easyBtn.addEventListener('click', () => {
+        game_mode('easy');
+        cells.forEach(cell => cell.addEventListener("click", cellClicked));
+        document.getElementById("mediumBtn").disabled=true;
+        document.getElementById("hardBtn").disabled=true;
+        
+      });
+      mediumBtn.addEventListener('click', () => {
+        game_mode('medium');
+        cells.forEach(cell => cell.addEventListener("click", cellClicked));
+        document.getElementById("easyBtn").disabled=true;
+        document.getElementById("hardBtn").disabled=true;
+      });
+      hardBtn.addEventListener('click', () => {
+        game_mode('hard');
+        cells.forEach(cell => cell.addEventListener("click", cellClicked));
+        
+        document.getElementById("mediumBtn").disabled=true;
+        document.getElementById("easyBtn").disabled=true;
+      });
+
+      initializeGame();
+      const flag=true;
+
+      function initializeGame(){
+          cells.forEach(cell => cell.removeEventListener("click", cellClicked));
+          restartBtn.addEventListener("click", restartGame);
+          statusText.textContent = `First player turn -> ${currentPlayer}`;
+          running = true;
+          document.getElementById("autoButton").disabled=true;
+        
+      }
+      function cellClicked(){
+          const cellIndex = this.getAttribute("cellIndex");
+
+          if(options[cellIndex]!=""){
+              return;
+          }
+          else{
+            updateCell(this, cellIndex);
+            checkWinner();
+          }
+        
+      };
+      function updateCell(cell, index){
+          options[index] = currentPlayer;
+          cell.textContent = currentPlayer;
+      };
+
+
+      function autoMove() { 
+        if (mode=='easy'){
+          while(true){
+            let val=Math.floor(Math.random() * 9);
+            if(options[val]=="") {
+              options[val]="O";
+              document.getElementById(`${val}`).textContent="O";
+              break;
+            }
+          }
+        }
+        else if(mode=='medium'){
+          //first column
+          if(options[0]=="O" && options[3]=="O" && options[6]==""){
+            options[6]="O";
+            document.getElementById("6").textContent="O"; 
+          }
+          else if(options[6]=="O" && options[0]=="O" && options[3]==""){
+            options[3]="O";
+            document.getElementById("3").textContent="O"; 
+          }
+          else if(options[6]=="O" && options[3]=="O" && options[0]==""){
+            options[0]="O";
+            document.getElementById("0").textContent="O"; 
+          }
+//second column
+          else if(options[1]=="O" && options[7]=="O" && options[4]==""){
+            options[4]="O";
+            document.getElementById("4").textContent="O"; 
+          }
+          else if(options[4]=="O" && options[7]=="O" && options[1]==""){
+            options[1]="O";
+            document.getElementById("1").textContent="O"; 
+          }
+          else if(options[1]=="O" && options[4]=="O" && options[7]==""){
+            options[7]="O";
+            document.getElementById("7").textContent="O"; 
+          }
+//third column
+          else if(options[2]=="O" && options[5]=="O" && options[8]==""){
+            options[8]="O";
+            document.getElementById("8").textContent="O"; 
+          }
+          else if(options[5]=="O" && options[8]=="O" && options[2]==""){
+            options[2]="O";
+            document.getElementById("2").textContent="O"; 
+          }
+          else if(options[8]=="O" && options[2]=="O" && options[5]==""){
+            options[5]="O";
+            document.getElementById("5").textContent="O"; 
+          }
+//cross1
+          else if(options[0]=="O" && options[4]=="O" && options[8]==""){
+            options[8]="O";
+            document.getElementById("8").textContent="O"; 
+          }
+          else if(options[4]=="O" && options[8]=="O" && options[0]==""){
+            options[0]="O";
+            document.getElementById("0").textContent="O"; 
+          }
+          else if(options[8]=="O" && options[0]=="O" && options[4]==""){
+            options[4]="O";
+            document.getElementById("4").textContent="O"; 
+          }
+//cross2
+          else if(options[2]=="O" && options[4]=="O" && options[6]==""){
+            options[6]="O";
+            document.getElementById("6").textContent="O"; 
+          }
+          else if(options[4]=="O" && options[6]=="O" && options[4]==""){
+            options[2]="O";
+            document.getElementById("2").textContent="O"; 
+          }
+          else if(options[6]=="O" && options[2]=="O" && options[4]==""){
+            options[4]="O";
+            document.getElementById("4").textContent="O"; 
+          }
+
+
+// first row
+          else if(options[0]=="X" && options[1]=="X" && options[2]==""){
+            options[2]="O";
+            document.getElementById("2").textContent="O";
+
+          }
+          else if(options[1]=="X" && options[2]=="X" && options[0]==""){
+            options[0]="O";
+            document.getElementById("0").textContent="O"; 
+          }
+          else if(options[0]=="X" && options[2]=="X" && options[1]==""){
+            options[1]="O";
+            document.getElementById("1").textContent="O"; 
+          }
+         
+//second row
+          else if(options[3]=="X" && options[4]=="X" && options[5]==""){
+            options[5]="O";
+            document.getElementById("5").textContent="O"; 
+          }
+          else if(options[4]=="X" && options[5]=="X" && options[3]==""){
+            options[3]="O";
+            document.getElementById("3").textContent="O"; 
+          }
+          else if(options[5]=="X" && options[3]=="X" && options[4]==""){
+            options[4]="O";
+            document.getElementById("4").textContent="O"; 
+          }
+//third row
+          else if(options[6]=="X" && options[7]=="X" && options[8]==""){
+            options[8]="O";
+            document.getElementById("8").textContent="O"; 
+          }
+          else if(options[7]=="X" && options[8]=="X" && options[6]==""){
+            options[6]="O";
+            document.getElementById("6").textContent="O"; 
+          }
+          
+          else if(options[6]=="X" && options[8]=="X" && options[7]==""){
+            options[7]="O";
+            document.getElementById("7").textContent="O"; 
+          }
+//first column
+          else if(options[0]=="X" && options[3]=="X" && options[6]==""){
+            options[6]="O";
+            document.getElementById("6").textContent="O"; 
+          }
+          else if(options[6]=="X" && options[0]=="X" && options[3]==""){
+            options[3]="O";
+            document.getElementById("3").textContent="O"; 
+          }
+          else if(options[6]=="X" && options[3]=="X" && options[0]==""){
+            options[0]="O";
+            document.getElementById("0").textContent="O"; 
+          }
+//second column
+          else if(options[1]=="X" && options[7]=="X" && options[4]==""){
+            options[4]="O";
+            document.getElementById("4").textContent="O"; 
+          }
+          else if(options[4]=="X" && options[7]=="X" && options[1]==""){
+            options[1]="O";
+            document.getElementById("1").textContent="O"; 
+          }
+          else if(options[1]=="X" && options[4]=="X" && options[7]==""){
+            options[7]="O";
+            document.getElementById("7").textContent="O"; 
+          }
+//third column
+          else if(options[2]=="X" && options[5]=="X" && options[8]==""){
+            options[8]="O";
+            document.getElementById("8").textContent="O"; 
+          }
+          else if(options[5]=="X" && options[8]=="X" && options[2]==""){
+            options[2]="O";
+            document.getElementById("2").textContent="O"; 
+          }
+          else if(options[8]=="X" && options[2]=="X" && options[5]==""){
+            options[5]="O";
+            document.getElementById("5").textContent="O"; 
+          }
+//cross1
+          else if(options[0]=="X" && options[4]=="X" && options[8]==""){
+            options[8]="O";
+            document.getElementById("8").textContent="O"; 
+          }
+          else if(options[4]=="X" && options[8]=="X" && options[0]==""){
+            options[0]="O";
+            document.getElementById("0").textContent="O"; 
+          }
+          else if(options[8]=="X" && options[0]=="X" && options[4]==""){
+            options[4]="O";
+            document.getElementById("4").textContent="O"; 
+          }
+//cross2
+          else if(options[2]=="X" && options[4]=="X" && options[6]==""){
+            options[6]="O";
+            document.getElementById("6").textContent="O"; 
+          }
+          else if(options[4]=="X" && options[6]=="X" && options[4]==""){
+            options[2]="O";
+            document.getElementById("2").textContent="O"; 
+          }
+          else if(options[6]=="X" && options[2]=="X" && options[4]==""){
+            options[4]="O";
+            document.getElementById("4").textContent="O"; 
+          }
+
+          else{
+            while(true){
+              let val=Math.floor(Math.random() * 9);
+            if(options[val]=="") {
+            options[val]="O";
+            document.getElementById(`${val}`).textContent="O";
+            break;
+           }
+
+         }
+            
+        }
+      }
+      else if(mode=='hard'){
+        if(options[1]=="" && options[2]=="" && options[3]=="" && options[4]=="X" && options[5]=="" && options[6]=="" && options[7]=="" && options[8]=="X" && options[0]=="O"){
+          options[2]="O";
+          document.getElementById("2").textContent="O";
+        }
+        else if(options[1]=="" && options[2]=="" && options[3]=="" && options[4]=="X" && options[5]=="" && options[6]=="" && options[7]=="" && options[8]=="X" && options[0]=="O"){
+          options[2]="O";
+          document.getElementById("2").textContent="O";
+        }
+        else if(options[1]=="" && options[2]=="" && options[3]=="" && options[4]=="X" && options[5]=="" && options[6]=="X" && options[7]=="" && options[8]=="" && options[0]=="O"){
+          options[2]="O";
+          document.getElementById("2").textContent="O";
+        }
+
+        else if(options[1]=="" && options[2]=="" && options[3]=="" && options[4]=="" && options[5]=="" && options[6]=="" && options[7]=="" && options[8]=="" && options[0]=="X"){
+          options[4]="O";
+          document.getElementById("4").textContent="O";
+        
+      }
+      else if(options[1]=="X" && options[2]=="" && options[3]=="" && options[4]=="" && options[5]=="" && options[6]=="" && options[7]=="" && options[8]=="" && options[0]==""){
+        options[4]="O";
+        document.getElementById("4").textContent="O";
+        
+      }
+      else if(options[1]=="" && options[2]=="X" && options[3]=="" && options[4]=="" && options[5]=="" && options[6]=="" && options[7]=="" && options[8]=="" && options[0]==""){
+        options[4]="O";
+        document.getElementById("4").textContent="O";
+        
+      }
+      else if(options[1]=="" && options[2]=="" && options[3]=="X" && options[4]=="" && options[5]=="" && options[6]=="" && options[7]=="" && options[8]=="" && options[0]==""){
+        options[4]="O";
+        document.getElementById("4").textContent="O";
+      }
+      else if(options[1]=="" && options[2]=="" && options[3]=="" && options[4]=="X" && options[5]=="" && options[6]=="" && options[7]=="" && options[8]=="" && options[0]==""){
+        options[0]="O";
+        document.getElementById("0").textContent="O";
+        
+      }
+      else if(options[1]=="" && options[2]=="" && options[3]=="" && options[4]=="" && options[5]=="X" && options[6]=="" && options[7]=="" && options[8]=="" && options[0]==""){
+        options[4]="O";
+        document.getElementById("4").textContent="O";
+        
+      }
+      else if(options[1]=="" && options[2]=="" && options[3]=="" && options[4]=="" && options[5]=="" && options[6]=="X" && options[7]=="" && options[8]=="" && options[0]==""){
+        options[4]="O";
+        document.getElementById("4").textContent="O";
+        
+      }
+      else if(options[1]=="" && options[2]=="" && options[3]=="" && options[4]=="" && options[5]=="" && options[6]=="" && options[7]=="X" && options[8]=="" && options[0]==""){
+        options[4]="O";
+        document.getElementById("4").textContent="O";
+        
+      }
+      else if(options[1]=="" && options[2]=="" && options[3]=="" && options[4]=="" && options[5]=="" && options[6]=="" && options[7]=="" && options[8]=="X" && options[0]==""){
+        options[4]="O";
+        document.getElementById("4").textContent="O";
+      }
+
+
+
+
+      
+         else if(options[0]=="O" && options[1]=="O" && options[2]==""){
+            options[2]="O";
+            document.getElementById("5").textContent="O"; 
+          }
+          else if(options[1]=="O" && options[2]=="O" && options[0]==""){
+            options[0]="O";
+            document.getElementById("3").textContent="O"; 
+          }
+          else if(options[2]=="0" && options[0]=="O" && options[1]==""){
+            options[1]="O";
+            document.getElementById("1").textContent="O"; 
+          }
+
+ 
+          else if(options[3]=="O" && options[4]=="O" && options[5]==""){
+            options[5]="O";
+            document.getElementById("5").textContent="O"; 
+          }
+          else if(options[4]=="O" && options[5]=="O" && options[3]==""){
+            options[3]="O";
+            document.getElementById("3").textContent="O"; 
+          }
+          else if(options[5]=="0" && options[3]=="O" && options[4]==""){
+            options[4]="O";
+            document.getElementById("4").textContent="O"; 
+          }
+
+
+
+
+          else if(options[6]=="O" && options[7]=="O" && options[8]==""){
+            options[8]="O";
+            document.getElementById("8").textContent="O"; 
+          }
+          else if(options[7]=="O" && options[8]=="O" && options[6]==""){
+            options[6]="O";
+            document.getElementById("6").textContent="O"; 
+          }
+          
+          else if(options[6]=="O" && options[8]=="O" && options[7]==""){
+            options[7]="O";
+            document.getElementById("7").textContent="O"; 
+          }
+
+
+
+          //first column
+          else if(options[0]=="O" && options[3]=="O" && options[6]==""){
+            options[6]="O";
+            document.getElementById("6").textContent="O"; 
+          }
+          else if(options[6]=="O" && options[0]=="O" && options[3]==""){
+            options[3]="O";
+            document.getElementById("3").textContent="O"; 
+          }
+          else if(options[6]=="O" && options[3]=="O" && options[0]==""){
+            options[0]="O";
+            document.getElementById("0").textContent="O"; 
+          }
+//second column
+          else if(options[1]=="O" && options[7]=="O" && options[4]==""){
+            options[4]="O";
+            document.getElementById("4").textContent="O"; 
+          }
+          else if(options[4]=="O" && options[7]=="O" && options[1]==""){
+            options[1]="O";
+            document.getElementById("1").textContent="O"; 
+          }
+          else if(options[1]=="O" && options[4]=="O" && options[7]==""){
+            options[7]="O";
+            document.getElementById("7").textContent="O"; 
+          }
+//third column
+          else if(options[2]=="O" && options[5]=="O" && options[8]==""){
+            options[8]="O";
+            document.getElementById("8").textContent="O"; 
+          }
+          else if(options[5]=="O" && options[8]=="O" && options[2]==""){
+            options[2]="O";
+            document.getElementById("2").textContent="O"; 
+          }
+          else if(options[8]=="O" && options[2]=="O" && options[5]==""){
+            options[5]="O";
+            document.getElementById("5").textContent="O"; 
+          }
+//cross1
+          else if(options[0]=="O" && options[4]=="O" && options[8]==""){
+            options[8]="O";
+            document.getElementById("8").textContent="O"; 
+          }
+          else if(options[4]=="O" && options[8]=="O" && options[0]==""){
+            options[0]="O";
+            document.getElementById("0").textContent="O"; 
+          }
+          else if(options[8]=="O" && options[0]=="O" && options[4]==""){
+            options[4]="O";
+            document.getElementById("4").textContent="O"; 
+          }
+//cross2
+          else if(options[2]=="O" && options[4]=="O" && options[6]==""){
+            options[6]="O";
+            document.getElementById("6").textContent="O"; 
+          }
+          else if(options[4]=="O" && options[6]=="O" && options[4]==""){
+            options[2]="O";
+            document.getElementById("2").textContent="O"; 
+          }
+          else if(options[6]=="O" && options[2]=="O" && options[4]==""){
+            options[4]="O";
+            document.getElementById("4").textContent="O"; 
+          }
+
+
+// first row
+          else if(options[0]=="X" && options[1]=="X" && options[2]==""){
+            options[2]="O";
+            document.getElementById("2").textContent="O";
+
+          }
+          else if(options[1]=="X" && options[2]=="X" && options[0]==""){
+            options[0]="O";
+            document.getElementById("0").textContent="O"; 
+          }
+          else if(options[0]=="X" && options[2]=="X" && options[1]==""){
+            options[1]="O";
+            document.getElementById("1").textContent="O"; 
+          }
+         
+//second row
+          else if(options[3]=="X" && options[4]=="X" && options[5]==""){
+            options[5]="O";
+            document.getElementById("5").textContent="O"; 
+          }
+          else if(options[4]=="X" && options[5]=="X" && options[3]==""){
+            options[3]="O";
+            document.getElementById("3").textContent="O"; 
+          }
+          else if(options[5]=="X" && options[3]=="X" && options[4]==""){
+            options[4]="O";
+            document.getElementById("4").textContent="O"; 
+          }
+//third row
+          else if(options[6]=="X" && options[7]=="X" && options[8]==""){
+            options[8]="O";
+            document.getElementById("8").textContent="O"; 
+          }
+          else if(options[7]=="X" && options[8]=="X" && options[6]==""){
+            options[6]="O";
+            document.getElementById("6").textContent="O"; 
+          }
+          
+          else if(options[6]=="X" && options[8]=="X" && options[7]==""){
+            options[7]="O";
+            document.getElementById("7").textContent="O"; 
+          }
+//first column
+          else if(options[0]=="X" && options[3]=="X" && options[6]==""){
+            options[6]="O";
+            document.getElementById("6").textContent="O"; 
+          }
+          else if(options[6]=="X" && options[0]=="X" && options[3]==""){
+            options[3]="O";
+            document.getElementById("3").textContent="O"; 
+          }
+          else if(options[6]=="X" && options[3]=="X" && options[0]==""){
+            options[0]="O";
+            document.getElementById("0").textContent="O"; 
+          }
+//second column
+          else if(options[1]=="X" && options[7]=="X" && options[4]==""){
+            options[4]="O";
+            document.getElementById("4").textContent="O"; 
+          }
+          else if(options[4]=="X" && options[7]=="X" && options[1]==""){
+            options[1]="O";
+            document.getElementById("1").textContent="O"; 
+          }
+          else if(options[1]=="X" && options[4]=="X" && options[7]==""){
+            options[7]="O";
+            document.getElementById("7").textContent="O"; 
+          }
+//third column
+          else if(options[2]=="X" && options[5]=="X" && options[8]==""){
+            options[8]="O";
+            document.getElementById("8").textContent="O"; 
+          }
+          else if(options[5]=="X" && options[8]=="X" && options[2]==""){
+            options[2]="O";
+            document.getElementById("2").textContent="O"; 
+          }
+          else if(options[8]=="X" && options[2]=="X" && options[5]==""){
+            options[5]="O";
+            document.getElementById("5").textContent="O"; 
+          }
+//cross1
+          else if(options[0]=="X" && options[4]=="X" && options[8]==""){
+            options[8]="O";
+            document.getElementById("8").textContent="O"; 
+          }
+          else if(options[4]=="X" && options[8]=="X" && options[0]==""){
+            options[0]="O";
+            document.getElementById("0").textContent="O"; 
+          }
+          else if(options[8]=="X" && options[0]=="X" && options[4]==""){
+            options[4]="O";
+            document.getElementById("4").textContent="O"; 
+          }
+//cross2
+          else if(options[2]=="X" && options[4]=="X" && options[6]==""){
+            options[6]="O";
+            document.getElementById("6").textContent="O"; 
+          }
+          else if(options[4]=="X" && options[6]=="X" && options[4]==""){
+            options[2]="O";
+            document.getElementById("2").textContent="O"; 
+          }
+          else if(options[6]=="X" && options[2]=="X" && options[4]==""){
+            options[4]="O";
+            document.getElementById("4").textContent="O"; 
+          }
+
+          else{
+            while(true){
+              let val=Math.floor(Math.random() * 9);
+            if(options[val]=="") {
+            options[val]="O";
+            document.getElementById(`${val}`).textContent="O";
+            break;
+           }
+
+         }
+            
+        }
+      }
+
+
+        currentPlayer="O";
+        checkWinner();
+       
+      };
+
+      function changePlayer(){
+        if(currentPlayer=="X"){
+          currentPlayer="O";
+          cells.forEach(cell => cell.removeEventListener("click", cellClicked));
+          statusText.textContent =`Computer turn -> O `;
+          document.getElementById("autoButton").disabled=false;
+        }
+        else{
+          currentPlayer="X";
+          cells.forEach(cell => cell.addEventListener("click", cellClicked));
+          statusText.textContent =`First player turn -> X`;
+          document.getElementById("autoButton").disabled=true;
+          
+        }
+        
+        
+      }
+      
+      function checkWinner(){
+          let roundWon = false;
+
+          for(let i = 0; i < winConditions.length; i++){
+              const condition = winConditions[i];
+              const cellA = options[condition[0]];
+              const cellB = options[condition[1]];
+              const cellC = options[condition[2]];
+            
+
+              if(cellA == "" || cellB == "" || cellC == ""){
+                  continue;
+              }
+              if(cellA == cellB && cellB == cellC){
+                  roundWon = true;
+                  coloring=condition;
+                  document.getElementById(`${condition[0]}`).style.backgroundColor="blue";
+                  document.getElementById(`${condition[1]}`).style.backgroundColor="blue";
+                  document.getElementById(`${condition[2]}`).style.backgroundColor="blue";
+                  
+                  break;
+              }
+           
+          }
+
+          if(roundWon){
+            if(currentPlayer=="X"){
+              statusText.textContent = `${currentPlayer} First player wins! `;
+              document.getElementById("statusText").style.color="red";
+              document.getElementById("autoButton").disabled=true;
+             
+              }
+            else{
+              statusText.textContent = `${currentPlayer} Computer wins!`;
+              document.getElementById("statusText").style.color="green";
+              
+              document.getElementById("autoButton").disabled=true;
+            }
+              running = false;
+              cells.forEach(cell => cell.removeEventListener("click", cellClicked));
+          }
+          else if(!options.includes("")){
+              statusText.textContent = `It's Draw!`;
+              running = false;
+              cells.forEach(cell => cell.removeEventListener("click", cellClicked));
+              document.getElementById("autoButton").disabled=true;
+          }
+          else{
+              changePlayer();
+          }
+      }
+      function restartGame(){
+          document.getElementById("autoButton").disabled=true;
+          document.getElementById("easyBtn").disabled=false;
+          document.getElementById("mediumBtn").disabled=false;
+          document.getElementById("hardBtn").disabled=false;
+          currentPlayer = "X";
+          options = ["", "", "", "", "", "", "", "", ""];
+          statusText.textContent = `First player turn -> X`;
+          cells.forEach(cell => cell.textContent = "");
+          cells.forEach(cell => cell.removeEventListener("click", cellClicked));
+          document.getElementById("statusText").style.color="black";
+          running = true;
+          document.getElementById(`${coloring[0]}`).style.backgroundColor="transparent";   
+          document.getElementById(`${coloring[1]}`).style.backgroundColor="transparent";
+          document.getElementById(`${coloring[2]}`).style.backgroundColor="transparent";
+          document.getElementById("autoButton").disabled=true;
+         
+          coloring=[];
+      }
+    </script>
+  </body>
+</html>
